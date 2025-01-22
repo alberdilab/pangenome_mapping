@@ -38,6 +38,7 @@ rule bowtie_build:
         "logs/pangenome_index.log"
     shell:
         """
+	module load bowtie2/2.4.2
         bowtie2-build \
             --large-index \
             --threads {threads} \
@@ -62,6 +63,7 @@ rule extract_bam:
         "logs/{sample}_extract.log"
     shell:
         """
+	module load samtools/1.21
         samtools fastq -1 {output.read1} -2 {output.read2} {input}
         """
 
@@ -84,8 +86,8 @@ rule bowtie_map:
         "logs/{sample}_map.log"
     shell:
         """
-        # Map reads to MAGs using Bowtie2
-        bowtie2 \
+	module load bowtie2/2.4.2 samtools/1.21
+	bowtie2 \
             --time \
             --threads {threads} \
             -x {params.reference} \

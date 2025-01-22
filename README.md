@@ -12,7 +12,7 @@ The rest of the many required softwatre are downloaded and installed inside the 
 ```sh
 
 
-# Clone metagenomic assembly+binning pipeline repository
+# Clone metagenomic pangenome_mapping pipeline repository
 git clone https://github.com/alberdilab/pangenome_mapping.git
 mv pangenome_mapping pangenome_mapping_test1
 

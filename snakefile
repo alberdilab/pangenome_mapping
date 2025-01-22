@@ -14,34 +14,84 @@
 ######
 
 #List sample wildcards
-genomes, = glob_wildcards("input/{genome}.fna")
+samples, = glob_wildcards("input/{sample}.bam")
 
 #Target files
 rule all:
     input:
-        expand("output/{genome}/annotations.tsv", genome=genomes)
+        expand("output/{sample}.bam", sample=samples)
 
-rule dram:
+rule bowtie_build:
     input:
-        "input/{genome}.fna"
+        "pangenome/all_gene_families.fna"
     output:
-        annotations="output/{genome}/annotations.tsv"
+        touch('pangenome/index.done') # Flag file
     params:
-        outputdir=workflow.basedir + "/output/{genome}",
-	jobname="{genome}.dr"
+        jobname = "pangenome_index",
+        index = "pangenome/all_gene_families"
     threads:
-        1
+        8
     resources:
-        mem_gb=24,
-        time='02:00:00'
+        mem_gb=8,
+        time='00:15:00'
+    log:
+        "logs/pangenome_index.log"
     shell:
         """
-	module load dram/1.5.0
-	rm -rf {params.outputdir}
-	DRAM.py annotate \
-                -i {input} \
-                -o {params.outputdir} \
-		--config_loc dram_config \
-                --threads {threads} \
-                --min_contig_size 1500 
+        bowtie2-build \
+            --large-index \
+            --threads {threads} \
+            {input} {params.index} \
+        &> {log}
+        """
+
+rule extract_bam:
+    input:
+        "input/{sample}.bam"
+    output:
+	read1="reads/{sample}.1.fq",
+	read2="reads/{sample}.2.fq"
+    params:
+        jobname = "extract_{sample}"
+    threads:
+        20
+    resources:
+        mem_gb=8,
+        time='00:30:00'
+    log:
+        "logs/{sample}_extract.log"
+    shell:
+        """
+        samtools fastq -1 {output.read1} -2 {output.read2} {input}
+        """
+
+rule bowtie_map:
+    input:
+        idx = "pangenome/index.done",
+        read1 = "reads/{sample}.1.fq",
+        read2 = "reads/{sample}.2.fq",
+    output:
+        "output/{sample}.bam"
+    params:
+        jobname = "mags_{sample}",
+        reference = "pangenome/all_gene_families"
+    threads:
+        8
+    resources:
+        mem_gb=24,
+        time='00:30:00'
+    log:
+        "logs/{sample}_map.log"
+    shell:
+        """
+        # Map reads to MAGs using Bowtie2
+        bowtie2 \
+            --time \
+            --threads {threads} \
+            -x {params.reference} \
+            -1 {input.read1} \
+            -2 {input.read2} \
+            --seed 1337 \
+        | samtools sort -@ {threads} -o {output} \
+        &> {log}
         """

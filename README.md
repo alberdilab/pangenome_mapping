@@ -16,7 +16,6 @@ The rest of the many required softwatre are downloaded and installed inside the 
 git clone https://github.com/alberdilab/pangenome_mapping.git
 mv pangenome_mapping pangenome_mapping_test1
 
-
 # Create screen session 
 screen -S pangenome_mapping_test1
 cd pangenome_mapping_test1

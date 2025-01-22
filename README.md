@@ -20,6 +20,6 @@ mv pangenome_mapping pangenome_mapping_test1
 # Create screen session 
 screen -S pangenome_mapping_test1
 cd pangenome_mapping_test1
-module load mamba/1.5.6 snakemake/7.20.0
+module load snakemake/7.19.1
 snakemake -j 20 --cluster 'sbatch -o logs/{params.jobname}-slurm-%j.out --mem {resources.mem_gb}G --time {resources.time} -c {threads} --job-name={params.jobname} -v'   --use-conda --conda-frontend mamba --conda-prefix conda --latency-wait 600
 ```

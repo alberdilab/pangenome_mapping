@@ -14,7 +14,7 @@
 ######
 
 #List sample wildcards
-samples, = glob_wildcards("input/{sample}.bam")
+samples, = glob_wildcards("reads/{sample}.bam")
 
 #Target files
 rule all:
@@ -48,7 +48,7 @@ rule bowtie_build:
 
 rule extract_bam:
     input:
-        "input/{sample}.bam"
+        "reads/{sample}.bam"
     output:
 	read1="reads/{sample}.1.fq",
 	read2="reads/{sample}.2.fq"
